@@ -1,10 +1,10 @@
-#Summary
+# Summary
 
 Building from the functionality of our [Basic Contract](https://github.com/Interblockchain/BasicContract), we build a non-custodian exchange smart contract. Our exchange would only accept transactions between assets generated with the [Basic Contract](https://github.com/Interblockchain/BasicContract). User would only need grant the exchange smart contract to power to spend a specified amount of funds (using the approve action) and issue an order on the exchange portal which is an external [firebase](https://firebase.google.com/) server.
 
 In order to simplify and minimize the database, we have chosen to work within a symmetric framework, abstracting the notion of buy or sell from the orders. Each order will instead correspond to a desired transaction between to amount of assets. Orders will specify the amount and asset that are offered by the user (in the base structure). They will also specify the asset the user is willing to accept as trade and the total amount accepted for the full order (in the counter structure). This way of doing things is more transparent, less error prone and as the added benefit of only handling asset amounts (conversions and other rounding prone calculations are left off-chain). 
 
-####Example:
+#### Example:
 ```
 Alice wants to trade 10.0000 iBTC on our exchange. Firstly, see approves the DEX account to spend 10.0000 iBTC in her name. She then logs in to our [firebase app]() and checks the different iBTC buying orders on the exchange. She chooses to sell her iBTC for some iXRP at an acceptable (fictional) rate of 100 iXRP per iBTC. To do so, she issues an Order on the firebase app by filling out a form. Behind the scenes, the app issues an createOrder action on the DEX contract specifying the 10.0000 iBTC in the base structure. Instead of only specifying the rate, it calculates the price of the full order (which is 1000.0000 iXRP) and specifies that as the counter. 
 ```
