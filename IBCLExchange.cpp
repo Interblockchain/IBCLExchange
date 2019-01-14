@@ -12,6 +12,7 @@ namespace eosio
 This fonctions adds an order to the orders table.
 */
 void IBCLExchange::createorder(name user,
+                               uint64_t key,
                                asset base,  
                                asset counter, 
                                asset fees,
@@ -61,10 +62,11 @@ void IBCLExchange::createorder(name user,
     //Check memo size
     eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
 
-    //Check if the order already exists
-    const uint64_t key = user.value + symbase.code().raw();
+    //const uint64_t key = user.value + symbase.code().raw() + timestamp;
     eosio::print("KEY: " , uint64_t{key}, "\n");
+    eosio::print("Symbol: ", uint64_t{symbase.code().raw()}, "\n");
 
+    //Check if the order already exists
     orders orderstable(_self, key);
     auto existo = orderstable.find(key);
     eosio_assert(existo == orderstable.end(), "Order with same key already exists");
@@ -81,7 +83,7 @@ void IBCLExchange::createorder(name user,
 
     //Now, emplace the order.
     orderstable.emplace(_self, [&](auto &o) {
-        o.key = user.value + symbase.code().raw();
+        o.key = key;
         o.user = user;
         o.base = base;
         o.counter = counter;
@@ -91,65 +93,65 @@ void IBCLExchange::createorder(name user,
 }
 
 /*
-This function is called after two orders are paired. It proceeds to transfer the required funds.
+This function is called after two orders are paired. It proceeds to transfer the specified funds.
+We explicitely specify th fubds to allow fractional fulfillement.
 Then it deletes orders (if they were both completely fulfilled) or just modifies their amounts.
 It's arguments are the two keys of the orders.
 */
 void IBCLExchange::settleorders(uint64_t maker,
                                 uint64_t taker,
-                                asset quantity,
+                                asset quantity_maker,
+                                asset deduct_maker,
+                                asset quantity_taker,
+                                asset deduct_taker,
                                 string memo )
 {
 
+    // Get both maker and taker orders
     orders morderstable(_self, maker);
     auto makerorder = morderstable.find(maker);
+    eosio_assert(makerorder != morderstable.end(), "Maker order not found");
     const auto &mot = *makerorder;
+
     orders torderstable(_self, taker);
     auto takerorder = torderstable.find(taker);
+    eosio_assert(takerorder != torderstable.end(), "Taker order not found");
     const auto &tot = *takerorder;
 
-    /*Allow fractional fulfillment
-     To do this: 1) calculate both rates,
-                 2) verify that rate of taker is higher then rate of maker,
-                 3) user taker rate and given amount to calculate the payoff to maker,
-    */
-    auto mrate = mot.counter.amount / mot.base.amount;
-    auto trate = tot.base.amount / tot.counter.amount;
-    eosio_assert( trate >= mrate, "Taker rate smaller than maker rate");
-    auto tamount = trate * quantity.amount;
-
     //Some sanity checks
-    eosio_assert( mot.base.amount >= quantity.amount, "Amount bigger than specified in maker order");
-    eosio_assert( tot.base.amount >= tamount, "Amount bigger than specified in taker order");
+    eosio::print("maker order quantity: " , asset{mot.base}, "\n");
+    eosio::print("maker quantity: " , asset{quantity_maker}, "\n");
+    eosio::print("taker order quantity: " , asset{tot.base}, "\n");
+    eosio::print("taker quantity: " , asset{quantity_taker}, "\n");
+    eosio_assert( mot.base.amount >= quantity_maker.amount, "Amount bigger than specified in maker order");
+    eosio_assert( tot.base.amount >= quantity_taker.amount, "Amount bigger than specified in taker order");
 
     //Now make the transfers between both parties
     //Don't need to redo all the checks since they are done in transferfrom
-    // MUST TRANSFORM AMOUNT AND TAMOUNT TO ASSET.
-    sendtransfer(mot.user, tot.user, quantity, memo);
-    //sendtransfer(tot.user, mot.user, _self, {tamount, tot.base.symbol}, memo);
-    sendtransfer(tot.user, mot.user, tot.base, memo);
+    sendtransfer(mot.user, tot.user, quantity_maker, memo);
+    sendtransfer(tot.user, mot.user, quantity_taker, memo);
 
     //Now modify/delete the orders accordingly
     // Maker:
     //updateorder(amount, morderstable, mot, mrate);
-    if(quantity.amount == mot.base.amount) 
+    if(quantity_maker.amount == mot.base.amount) 
     {
         morderstable.erase(mot);
     } else {
         morderstable.modify(mot, _self, [&](auto &o) {
-        o.base.amount -= quantity.amount;
-        o.counter.amount -= quantity.amount * mrate;
+        o.base.amount -= quantity_maker.amount;
+        o.counter.amount -= deduct_maker.amount;
     });
     }
     //Taker:
     //updateorder(tamount, torderstable, tot, trate);
-    if(tamount == tot.base.amount) 
+    if(quantity_taker.amount == tot.base.amount) 
     {
         torderstable.erase(tot);
     } else {
         torderstable.modify(tot, _self, [&](auto &o) {
-        o.base.amount -= tamount;
-        o.counter.amount -= tamount / trate;
+        o.base.amount -= quantity_taker.amount;
+        o.counter.amount -= deduct_taker.amount;
     });
     }
 }

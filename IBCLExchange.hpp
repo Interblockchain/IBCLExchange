@@ -21,6 +21,7 @@ public:
 
   [[eosio::action]]
   void createorder(name user,
+                   uint64_t key,
                    asset base,
                    asset counter,
                    asset fees,
@@ -31,7 +32,10 @@ public:
   [[eosio::action]]
   void settleorders(uint64_t maker,
                     uint64_t taker,
-                    asset quantity,
+                    asset quantity_maker,
+                    asset deduct_maker,
+                    asset quantity_taker,
+                    asset deduct_taker,
                     string memo );
 
   [[eosio::action]]
@@ -59,22 +63,22 @@ private:
   };
 
   struct [[eosio::table]] currency_stats
-    {
+  {
         asset supply;
         asset max_supply;
         name issuer;
 
         uint64_t primary_key() const { return supply.symbol.code().raw(); }
-    };
+  };
 
-    struct [[eosio::table]] allowed_struct
-    {
+  struct [[eosio::table]] allowed_struct
+  {
         uint64_t key;
         name spender;
         asset quantity;
 
         uint64_t primary_key() const { return key; }
-    };
+  };
 
   typedef eosio::multi_index<"orders"_n, order_struct> orders;
   typedef eosio::multi_index<"stat"_n, currency_stats> stats;

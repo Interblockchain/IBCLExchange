@@ -11,6 +11,10 @@
           "type":"name"
         },
         {
+          "name":"key", 
+          "type":"uint64"
+        },
+        {
           "name":"base", 
           "type":"asset"
         },
@@ -49,7 +53,19 @@
             "type":"uint64"
           },
           {
-            "name":"quantity", 
+            "name":"quantity_maker", 
+            "type":"asset"
+          },
+          {
+            "name":"deduct_maker", 
+            "type":"asset"
+          },
+          {
+            "name":"quantity_taker", 
+            "type":"asset"
+          },
+          {
+            "name":"deduct_taker", 
             "type":"asset"
           },
           {
