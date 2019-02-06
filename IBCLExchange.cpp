@@ -131,29 +131,31 @@ void IBCLExchange::settleorders(uint64_t maker,
     sendtransfer(mot.user, tot.user, quantity_maker, memo);
     sendtransfer(tot.user, mot.user, quantity_taker, memo);
 
+    //This is done by calling editorder or cancelorder when a settlement is done.
+    //So, don't do it here.
     //Now modify/delete the orders accordingly
     // Maker:
-    //updateorder(amount, morderstable, mot, mrate);
-    if(quantity_maker.amount == mot.base.amount) 
-    {
-        morderstable.erase(mot);
-    } else {
-        morderstable.modify(mot, _self, [&](auto &o) {
-        o.base.amount -= quantity_maker.amount;
-        o.counter.amount -= deduct_maker.amount;
-    });
-    }
-    //Taker:
-    //updateorder(tamount, torderstable, tot, trate);
-    if(quantity_taker.amount == tot.base.amount) 
-    {
-        torderstable.erase(tot);
-    } else {
-        torderstable.modify(tot, _self, [&](auto &o) {
-        o.base.amount -= quantity_taker.amount;
-        o.counter.amount -= deduct_taker.amount;
-    });
-    }
+    // //updateorder(amount, morderstable, mot, mrate);
+    // if(quantity_maker.amount == mot.base.amount) 
+    // {
+    //     morderstable.erase(mot);
+    // } else {
+    //     morderstable.modify(mot, _self, [&](auto &o) {
+    //     o.base.amount -= quantity_maker.amount;
+    //     o.counter.amount -= deduct_maker.amount;
+    // });
+    // }
+    // //Taker:
+    // //updateorder(tamount, torderstable, tot, trate);
+    // if(quantity_taker.amount == tot.base.amount) 
+    // {
+    //     torderstable.erase(tot);
+    // } else {
+    //     torderstable.modify(tot, _self, [&](auto &o) {
+    //     o.base.amount -= quantity_taker.amount;
+    //     o.counter.amount -= deduct_taker.amount;
+    // });
+    // }
 }
 
 /*
@@ -173,18 +175,20 @@ void IBCLExchange::editorder(uint64_t key,
     eosio_assert(element != orderstable.end(), "Order not found!");
     const auto &ot = *element;
 
+    auto basic = "basiccontrac"_n;
+
     //Checks on the base amount: check that it is valid
     auto symbase = base.symbol;
     eosio_assert(symbase.is_valid(), "invalid symbol name");
     eosio_assert(base.is_valid(), "invalid quantity of base token");
     eosio_assert(base.amount > 0, "Base amount must be positive");
-    stats basestatstable(_self, symbase.code().raw()); //Should put the BasicContract account and not _self?
+    stats basestatstable(basic, symbase.code().raw()); 
     const auto &bst = basestatstable.get(symbase.code().raw());
     eosio_assert(symbase == bst.supply.symbol, "symbol precision mismatch");
     eosio_assert(symbase == ot.base.symbol, "Cannot change the base asset type");
 
     // Checks on the allowed table of the user for the base amount
-    allowed allowedtable(_self, user.value);                  //Should put the BasicContract account and not _self?
+    allowed allowedtable(basic, user.value);
     auto existing = allowedtable.find(_self.value + symbase.code().raw()); //Find returns an iterator pointing to the found object
     eosio_assert(existing != allowedtable.end(), "IBCLExchange not allowed");
     const auto &at = *existing;
@@ -198,7 +202,7 @@ void IBCLExchange::editorder(uint64_t key,
     eosio_assert(symcounter.is_valid(), "invalid symbol name");
     eosio_assert(counter.is_valid(), "invalid quantity of base token");
     eosio_assert(counter.amount > 0, "Base amount must be positive");
-    stats counterstatstable(_self, symcounter.code().raw()); //Should put the BasicContract account and not _self?
+    stats counterstatstable(basic, symcounter.code().raw());
     const auto &cst = counterstatstable.get(symcounter.code().raw());
     eosio_assert(symcounter == cst.supply.symbol, "symbol precision mismatch");
 

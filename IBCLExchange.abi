@@ -95,10 +95,6 @@
           "type":"asset"
           },
           {
-            "name":"memo", 
-            "type":"string"
-          },
-          {
           "name":"timestamp", 
           "type":"uint64"
           },

@@ -39,15 +39,15 @@ public:
                     string memo );
 
   [[eosio::action]]
-  void cancelorder(uint64_t key);
-
-  [[eosio::action]]
   void editorder(uint64_t key,
                  name user,
                  asset base,
                  asset counter,
                  uint64_t timestamp,
                  uint64_t expires);
+
+  [[eosio::action]]
+  void cancelorder(uint64_t key);
 
 private:
 
