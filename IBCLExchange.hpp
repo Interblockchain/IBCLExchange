@@ -21,6 +21,7 @@ public:
 
   [[eosio::action]]
   void createorder(name user,
+                   name sender,
                    uint64_t key,
                    asset base,
                    asset counter,
@@ -55,6 +56,7 @@ private:
   {
     uint64_t key;
     name user;
+    name sender;
     asset base;
     asset counter;
     uint64_t timestamp;

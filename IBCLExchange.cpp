@@ -12,6 +12,7 @@ namespace eosio
 This fonctions adds an order to the orders table.
 */
 void IBCLExchange::createorder(name user,
+                               name sender,
                                uint64_t key,
                                asset base,  
                                asset counter, 
@@ -23,11 +24,10 @@ void IBCLExchange::createorder(name user,
     eosio::print("Entering contract \n");
 
     //Only the account on which the contract is deployed can make operations
-    require_auth(_self);
+    require_auth(user);
 
-    eosio::print("After _self authorization \n");
     //BasicContract address
-    auto basic = "basiccontrac"_n;
+    auto basic = "ibclcontract"_n;
 
     //Checks on the base amount: check that it is valid
     auto symbase = base.symbol;
@@ -58,20 +58,22 @@ void IBCLExchange::createorder(name user,
     eosio_assert(symcounter == cst.supply.symbol, "symbol precision mismatch");
 
     //Should we check the fees?
+    auto symfees = fees.symbol;
+    eosio_assert(symfees.is_valid(), "invalid symbol name");
+    eosio_assert(fees.is_valid(), "invalid quantity of base token");
+    eosio_assert(fees.amount >= 0, "Base amount must be positive or zero");
+    eosio_assert(symfees.code().raw() == "INTER", "Fees must be in INTER"); //Fees must be paid in INTER
+    stats feestatstable(basic, symfees.code().raw()); //basic or _self?
+    const auto &fst = feestatstable.get(symfees.code().raw());
+    eosio_assert(symfees == fst.supply.symbol, "symbol precision mismatch");
 
     //Check memo size
     eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
-
-    //const uint64_t key = user.value + symbase.code().raw() + timestamp;
-    eosio::print("KEY: " , uint64_t{key}, "\n");
-    eosio::print("Symbol: ", uint64_t{symbase.code().raw()}, "\n");
 
     //Check if the order already exists
     orders orderstable(_self, key);
     auto existo = orderstable.find(key);
     eosio_assert(existo == orderstable.end(), "Order with same key already exists");
-
-    eosio::print("Before sendtransfer \n");
 
     //Since everything is ok, we can proceed with the paiement of the fees.
     //We can only use the allowed token that we checked.
@@ -79,12 +81,11 @@ void IBCLExchange::createorder(name user,
     // Should to address be other then _self?
     sendtransfer(user, _self, fees, memo);
 
-    eosio::print("After paiement of fees \n");
-
     //Now, emplace the order.
     orderstable.emplace(_self, [&](auto &o) {
         o.key = key;
         o.user = user;
+        o.sender = sender;
         o.base = base;
         o.counter = counter;
         o.timestamp = timestamp;
@@ -131,6 +132,10 @@ void IBCLExchange::settleorders(uint64_t maker,
     sendtransfer(mot.user, tot.user, quantity_maker, memo);
     sendtransfer(tot.user, mot.user, quantity_taker, memo);
 
+    // Pay the fees to the respective senders
+    sendtransfer(mot.user, mot.sender, mot.fee, memo)
+    sendtransfer(tot.user, tot.sender, tot.fee, memo)
+
     //This is done by calling editorder or cancelorder when a settlement is done.
     //So, don't do it here.
     //Now modify/delete the orders accordingly
@@ -169,13 +174,16 @@ void IBCLExchange::editorder(uint64_t key,
                              uint64_t timestamp,
                              uint64_t expires)
 {
+    //Only the user can modify his orders
+    require_auth(user);
+
     //Check that the order exists and get it
     orders orderstable(_self, key);
     auto element = orderstable.find(key);
     eosio_assert(element != orderstable.end(), "Order not found!");
     const auto &ot = *element;
 
-    auto basic = "basiccontrac"_n;
+    auto basic = "ibclcontract"_n;
 
     //Checks on the base amount: check that it is valid
     auto symbase = base.symbol;
@@ -233,7 +241,7 @@ void IBCLExchange::sendtransfer(name from, name to, asset amount, string memo)
     eosio::print("Inside sendtransfer: ", name{get_self()}, "\n");
     action transferfrom = action(
       permission_level{get_self(),"active"_n},
-      "basiccontrac"_n,
+      "ibclcontract"_n,
       "transferfrom"_n,
       std::make_tuple(from, to, get_self(), amount, memo));
 
