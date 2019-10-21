@@ -78,11 +78,11 @@ void IBCLExchange::createorder(name user,
     //Since everything is ok, we can proceed with the paiement of the fees.
     //We can only use the allowed token that we checked.
     //Do this by calling the transferFrom action from Basic Contract
-    // Should to address be other then _self?
-    sendtransfer(user, _self, fees, memo);
+    //Should to address be other then _self?
+    //sendtransfer(user, _self, fees, memo);
 
     //Now, emplace the order.
-    orderstable.emplace(_self, [&](auto &o) {
+    orderstable.emplace(user, [&](auto &o) {  //who pays the RAM, _self or user?
         o.key = key;
         o.user = user;
         o.sender = sender;
@@ -91,6 +91,10 @@ void IBCLExchange::createorder(name user,
         o.timestamp = timestamp;
         o.expires = expires;
     });
+
+    //Update list of orders?
+
+
 }
 
 /*
@@ -102,12 +106,11 @@ It's arguments are the two keys of the orders.
 void IBCLExchange::settleorders(uint64_t maker,
                                 uint64_t taker,
                                 asset quantity_maker,
-                                asset deduct_maker,
+                                // asset deduct_maker,
                                 asset quantity_taker,
-                                asset deduct_taker,
+                                // asset deduct_taker,
                                 string memo )
 {
-
     // Get both maker and taker orders
     orders morderstable(_self, maker);
     auto makerorder = morderstable.find(maker);
@@ -171,7 +174,6 @@ void IBCLExchange::editorder(uint64_t key,
                              name user,
                              asset base,
                              asset counter,
-                             uint64_t timestamp,
                              uint64_t expires)
 {
     //Only the user can modify his orders
