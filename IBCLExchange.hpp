@@ -62,7 +62,7 @@ private:
     name sender;
     asset base;
     asset counter;
-    asset fee;
+    asset fees;
     uint64_t timestamp;
     uint64_t expires;
     uint64_t primary_key() const { return key; }

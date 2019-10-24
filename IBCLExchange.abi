@@ -11,6 +11,10 @@
           "type":"name"
         },
         {
+          "name":"sender", 
+          "type":"name"
+        },
+        {
           "name":"key", 
           "type":"uint64"
         },
@@ -95,10 +99,6 @@
           "type":"asset"
           },
           {
-          "name":"timestamp", 
-          "type":"uint64"
-          },
-          {
           "name":"expires", 
           "type":"uint64"
           }
@@ -106,6 +106,16 @@
     },
     {
        "name": "cancelorder",
+       "base": "",
+       "fields": [
+          {
+            "name":"key", 
+            "type":"uint64"
+          }
+       ]
+    },
+    {
+       "name": "retireorder",
        "base": "",
        "fields": [
           {
@@ -127,11 +137,19 @@
           "type":"name"
         },
         {
+          "name":"sender", 
+          "type":"name"
+        },
+        {
           "name":"base", 
           "type":"asset"
         },
         {
           "name":"counter", 
+          "type":"asset"
+        },
+        {
+          "name":"fees", 
           "type":"asset"
         },
         {
@@ -200,6 +218,11 @@
     {
       "name": "cancelorder",
       "type": "cancelorder",
+      "ricardian_contract": ""
+    },
+    {
+      "name": "retireorder",
+      "type": "retireorder",
       "ricardian_contract": ""
     }
   ],

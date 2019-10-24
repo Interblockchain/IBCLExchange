@@ -89,6 +89,7 @@ void IBCLExchange::createorder(name user,
         o.sender = sender;
         o.base = base;
         o.counter = counter;
+        o.fees = fees;
         o.timestamp = timestamp;
         o.expires = expires;
     });
@@ -155,8 +156,8 @@ void IBCLExchange::settleorders(uint64_t maker,
     sendtransfer(tot.user, mot.user, quantity_taker, memo);
 
     // Pay the fees to the respective senders
-    sendtransfer(mot.user, mot.sender, mot.fee, memo);
-    sendtransfer(tot.user, tot.sender, tot.fee, memo);
+    sendtransfer(mot.user, mot.sender, mot.fees, memo);
+    sendtransfer(tot.user, tot.sender, tot.fees, memo);
 
     //This is done by calling editorder or cancelorder when a settlement is done.
     //So, don't do it here.
