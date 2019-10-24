@@ -1,7 +1,8 @@
 #pragma once
 
-#include <eosiolib/asset.hpp>
-#include <eosiolib/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/system.hpp>
 
 #include <string>
 
@@ -44,11 +45,13 @@ public:
                  name user,
                  asset base,
                  asset counter,
-                 uint64_t timestamp,
                  uint64_t expires);
 
   [[eosio::action]]
   void cancelorder(uint64_t key);
+
+  [[eosio::action]]
+  void retireorder(uint64_t key);
 
 private:
 
@@ -59,6 +62,7 @@ private:
     name sender;
     asset base;
     asset counter;
+    asset fee;
     uint64_t timestamp;
     uint64_t expires;
     uint64_t primary_key() const { return key; }
@@ -87,5 +91,6 @@ private:
   typedef eosio::multi_index<"allowed"_n, allowed_struct> allowed;
 
   void sendtransfer(name from, name to, asset amount, string memo);
+  uint32_t now();
 };
 } // namespace eosio

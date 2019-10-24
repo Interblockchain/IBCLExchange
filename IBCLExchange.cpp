@@ -26,54 +26,55 @@ void IBCLExchange::createorder(name user,
     //Only the account on which the contract is deployed can make operations
     require_auth(user);
 
-    //BasicContract address
+    //BasicContract address and our token
     auto basic = "ibclcontract"_n;
+    uint64_t token = 353350471241;
 
     //Checks on the base amount: check that it is valid
     auto symbase = base.symbol;
-    eosio_assert(symbase.is_valid(), "invalid symbol name");
-    eosio_assert(base.is_valid(), "invalid quantity of base token");
-    eosio_assert(base.amount > 0, "Base amount must be positive");
+    check(symbase.is_valid(), "invalid symbol name");
+    check(base.is_valid(), "invalid quantity of base token");
+    check(base.amount > 0, "Base amount must be positive");
     stats basestatstable(basic, symbase.code().raw()); //basic or _self?
     const auto &bst = basestatstable.get(symbase.code().raw());
-    eosio_assert(symbase == bst.supply.symbol, "symbol precision mismatch");
+    check(symbase == bst.supply.symbol, "symbol precision mismatch");
 
     // Checks on the allowed table of the user for the base amount
     allowed allowedtable(basic, user.value);                  //basic or _self?
     auto existing = allowedtable.find(_self.value + symbase.code().raw()); //Find returns an iterator pointing to the found object
-    eosio_assert(existing != allowedtable.end(), "IBCLExchange not allowed");
+    check(existing != allowedtable.end(), "IBCLExchange not allowed");
     const auto &at = *existing;
-    eosio_assert(at.quantity.is_valid(), "invalid allowed quantity");
-    eosio_assert(at.quantity.amount > 0, "allowed must be a positive quantity");
-    eosio_assert(at.quantity.symbol == bst.supply.symbol, "symbol precision mismatch");
-    eosio_assert(at.quantity.amount >= base.amount + fees.amount, "Allowed quantity < Order Quantity");
+    check(at.quantity.is_valid(), "invalid allowed quantity");
+    check(at.quantity.amount > 0, "allowed must be a positive quantity");
+    check(at.quantity.symbol == bst.supply.symbol, "symbol precision mismatch");
+    check(at.quantity.amount >= base.amount + fees.amount, "Allowed quantity < Order Quantity");
 
     //Checks on the counter amount: check if it is valid
     auto symcounter = counter.symbol;
-    eosio_assert(symcounter.is_valid(), "invalid symbol name");
-    eosio_assert(counter.is_valid(), "invalid quantity of base token");
-    eosio_assert(counter.amount > 0, "Base amount must be positive");
+    check(symcounter.is_valid(), "invalid symbol name");
+    check(counter.is_valid(), "invalid quantity of base token");
+    check(counter.amount > 0, "Base amount must be positive");
     stats counterstatstable(basic, symcounter.code().raw()); //basic or _self?
     const auto &cst = counterstatstable.get(symcounter.code().raw());
-    eosio_assert(symcounter == cst.supply.symbol, "symbol precision mismatch");
+    check(symcounter == cst.supply.symbol, "symbol precision mismatch");
 
     //Should we check the fees?
     auto symfees = fees.symbol;
-    eosio_assert(symfees.is_valid(), "invalid symbol name");
-    eosio_assert(fees.is_valid(), "invalid quantity of base token");
-    eosio_assert(fees.amount >= 0, "Base amount must be positive or zero");
-    eosio_assert(symfees.code().raw() == "INTER", "Fees must be in INTER"); //Fees must be paid in INTER
+    check(symfees.is_valid(), "invalid symbol name");
+    check(fees.is_valid(), "invalid quantity of base token");
+    check(fees.amount >= 0, "Base amount must be positive or zero");
+    check(symfees.code().raw() == token, "Fees must be in INTER"); //Fees must be paid in INTER
     stats feestatstable(basic, symfees.code().raw()); //basic or _self?
     const auto &fst = feestatstable.get(symfees.code().raw());
-    eosio_assert(symfees == fst.supply.symbol, "symbol precision mismatch");
+    check(symfees == fst.supply.symbol, "symbol precision mismatch");
 
     //Check memo size
-    eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
+    check(memo.size() <= 256, "memo has more than 256 bytes");
 
     //Check if the order already exists
-    orders orderstable(_self, key);
+    orders orderstable(_self, _self.value);
     auto existo = orderstable.find(key);
-    eosio_assert(existo == orderstable.end(), "Order with same key already exists");
+    check(existo == orderstable.end(), "Order with same key already exists");
 
     //Since everything is ok, we can proceed with the paiement of the fees.
     //We can only use the allowed token that we checked.
@@ -92,9 +93,6 @@ void IBCLExchange::createorder(name user,
         o.expires = expires;
     });
 
-    //Update list of orders?
-
-
 }
 
 /*
@@ -106,29 +104,50 @@ It's arguments are the two keys of the orders.
 void IBCLExchange::settleorders(uint64_t maker,
                                 uint64_t taker,
                                 asset quantity_maker,
-                                // asset deduct_maker,
+                                asset deduct_maker,
                                 asset quantity_taker,
-                                // asset deduct_taker,
+                                asset deduct_taker,
                                 string memo )
 {
+    const double tol = 1.0e-10;
+
     // Get both maker and taker orders
     orders morderstable(_self, maker);
     auto makerorder = morderstable.find(maker);
-    eosio_assert(makerorder != morderstable.end(), "Maker order not found");
+    check(makerorder != morderstable.end(), "Maker order not found");
     const auto &mot = *makerorder;
 
     orders torderstable(_self, taker);
     auto takerorder = torderstable.find(taker);
-    eosio_assert(takerorder != torderstable.end(), "Taker order not found");
+    check(takerorder != torderstable.end(), "Taker order not found");
     const auto &tot = *takerorder;
 
-    //Some sanity checks
+    //Calculating the different required prices for validation
+    const double price = quantity_maker.amount / quantity_taker.amount;
+    const double ask_price = mot.base.amount / mot.counter.amount;
+    const double taker_price = tot.base.amount / tot.counter.amount;
+    const double new_ask_price = (mot.base.amount -  quantity_maker.amount)/(mot.counter.amount - deduct_maker.amount);
+    const double new_taker_price = (tot.base.amount -  quantity_taker.amount)/(tot.counter.amount - deduct_taker.amount);
+
+    //TEMP printing
     eosio::print("maker order quantity: " , asset{mot.base}, "\n");
     eosio::print("maker quantity: " , asset{quantity_maker}, "\n");
+    eosio::print("maker deduction: "  , asset{deduct_maker}, "\n");
     eosio::print("taker order quantity: " , asset{tot.base}, "\n");
     eosio::print("taker quantity: " , asset{quantity_taker}, "\n");
-    eosio_assert( mot.base.amount >= quantity_maker.amount, "Amount bigger than specified in maker order");
-    eosio_assert( tot.base.amount >= quantity_taker.amount, "Amount bigger than specified in taker order");
+    eosio::print("taker deduction: "  , asset{deduct_taker}, "\n");
+    eosio::print("price: " , double{price}, "\n");
+    eosio::print("ask_price: " , double{ask_price}, "\n");
+    eosio::print("taker_price: " , double{taker_price}, "\n");
+    eosio::print("new_ask_price: " , double{new_ask_price}, "\n");
+    eosio::print("new_taker_price: " , double{new_taker_price}, "\n");    
+
+    //Some sanity checks
+    check( mot.base.amount >= quantity_maker.amount, "Amount bigger than specified in maker order");
+    check( tot.base.amount >= quantity_taker.amount, "Amount bigger than specified in taker order");
+    check( price >= ask_price, "Buying price is smaller than asked price");
+    check((new_ask_price - ask_price) <= tol, "Updated maker ask price is not the same (deduct_maker not valid)");
+    check((new_taker_price - taker_price) <= tol, "Updated taker ask price is not the same (deduct_taker not valid)");
 
     //Now make the transfers between both parties
     //Don't need to redo all the checks since they are done in transferfrom
@@ -136,8 +155,8 @@ void IBCLExchange::settleorders(uint64_t maker,
     sendtransfer(tot.user, mot.user, quantity_taker, memo);
 
     // Pay the fees to the respective senders
-    sendtransfer(mot.user, mot.sender, mot.fee, memo)
-    sendtransfer(tot.user, tot.sender, tot.fee, memo)
+    sendtransfer(mot.user, mot.sender, mot.fee, memo);
+    sendtransfer(tot.user, tot.sender, tot.fee, memo);
 
     //This is done by calling editorder or cancelorder when a settlement is done.
     //So, don't do it here.
@@ -182,39 +201,39 @@ void IBCLExchange::editorder(uint64_t key,
     //Check that the order exists and get it
     orders orderstable(_self, key);
     auto element = orderstable.find(key);
-    eosio_assert(element != orderstable.end(), "Order not found!");
+    check(element != orderstable.end(), "Order not found!");
     const auto &ot = *element;
 
     auto basic = "ibclcontract"_n;
 
     //Checks on the base amount: check that it is valid
     auto symbase = base.symbol;
-    eosio_assert(symbase.is_valid(), "invalid symbol name");
-    eosio_assert(base.is_valid(), "invalid quantity of base token");
-    eosio_assert(base.amount > 0, "Base amount must be positive");
+    check(symbase.is_valid(), "invalid symbol name");
+    check(base.is_valid(), "invalid quantity of base token");
+    check(base.amount > 0, "Base amount must be positive");
     stats basestatstable(basic, symbase.code().raw()); 
     const auto &bst = basestatstable.get(symbase.code().raw());
-    eosio_assert(symbase == bst.supply.symbol, "symbol precision mismatch");
-    eosio_assert(symbase == ot.base.symbol, "Cannot change the base asset type");
+    check(symbase == bst.supply.symbol, "symbol precision mismatch");
+    check(symbase == ot.base.symbol, "Cannot change the base asset type");
 
     // Checks on the allowed table of the user for the base amount
     allowed allowedtable(basic, user.value);
     auto existing = allowedtable.find(_self.value + symbase.code().raw()); //Find returns an iterator pointing to the found object
-    eosio_assert(existing != allowedtable.end(), "IBCLExchange not allowed");
+    check(existing != allowedtable.end(), "IBCLExchange not allowed");
     const auto &at = *existing;
-    eosio_assert(at.quantity.is_valid(), "invalid allowed quantity");
-    eosio_assert(at.quantity.amount > 0, "allowed must be a positive quantity");
-    eosio_assert(at.quantity.symbol == bst.supply.symbol, "symbol precision mismatch");
-    eosio_assert(at.quantity.amount >= base.amount, "Allowed quantity < Order Quantity");
+    check(at.quantity.is_valid(), "invalid allowed quantity");
+    check(at.quantity.amount > 0, "allowed must be a positive quantity");
+    check(at.quantity.symbol == bst.supply.symbol, "symbol precision mismatch");
+    check(at.quantity.amount >= base.amount, "Allowed quantity < Order Quantity");
 
     //Checks on the counter amount: check if it is valid
     auto symcounter = counter.symbol;
-    eosio_assert(symcounter.is_valid(), "invalid symbol name");
-    eosio_assert(counter.is_valid(), "invalid quantity of base token");
-    eosio_assert(counter.amount > 0, "Base amount must be positive");
+    check(symcounter.is_valid(), "invalid symbol name");
+    check(counter.is_valid(), "invalid quantity of base token");
+    check(counter.amount > 0, "Base amount must be positive");
     stats counterstatstable(basic, symcounter.code().raw());
     const auto &cst = counterstatstable.get(symcounter.code().raw());
-    eosio_assert(symcounter == cst.supply.symbol, "symbol precision mismatch");
+    check(symcounter == cst.supply.symbol, "symbol precision mismatch");
 
     orderstable.modify(ot, _self, [&](auto &o) {
         o.base.amount = base.amount;
@@ -229,8 +248,22 @@ This functions deletes an order from the orders table.
 void IBCLExchange::cancelorder(uint64_t key)
 {
     orders orderstable(_self, key);
-    auto ot = orderstable.find(key);
-    eosio_assert(ot != orderstable.end(), "Order not found!");
+    auto order = orderstable.find(key);
+    check(order != orderstable.end(), "Order not found!");
+    const auto &ot = *order;
+    require_auth(ot.user);
+    orderstable.erase(ot);
+}
+/*
+This function is called to retire orders which are expired
+*/
+void IBCLExchange::retireorder(uint64_t key)
+{
+    orders orderstable(_self, key);
+    auto order = orderstable.find(key);
+    check(order != orderstable.end(), "Order not found!");
+    const auto &ot = *order;
+    check(ot.expires > now(), "Order has not expired");
     orderstable.erase(ot);
 }
 
@@ -248,6 +281,13 @@ void IBCLExchange::sendtransfer(name from, name to, asset amount, string memo)
       std::make_tuple(from, to, get_self(), amount, memo));
 
     transferfrom.send();
+}
+
+/*
+Helper function to get the UTC time 
+*/
+uint32_t IBCLExchange::now() {
+  return current_time_point().sec_since_epoch();
 }
 
 } // namespace eosio
