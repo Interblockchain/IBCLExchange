@@ -47,8 +47,10 @@ order_struct
     {
         uint64_t key;
         account_name user;
+        account_name sender;
         asset base;
         asset counter;
+        asset fees;
         uint64_t timestamp;
         uint64_t expires; 
         uint64_t primary_key() const {return key;}
@@ -63,23 +65,31 @@ asset
 
 # Actions
 
-#### createorder(account_name user, asset base, asset counter, asset fees, string memo, uint64_t timestamp, uint64_t expires)
+``` c++
+createorder(account_name user, asset base, asset counter, asset fees, string memo, uint64_t timestamp, uint64_t expires)
+```
 The createOrder method allows to store an Order in our exchange state.
 Before adding the order into the table, we need to:
 1) check that the user as sufficient balance and allowance for the base and the required permissions. 
 
 2) Since a user can always change his allowance table, he can lock the exchange out after issuing an Order. This could be used for malicious order placement (DOS or something). To mitigate this, we apply fees directly on Order submission, even before adding it to the table. If the paiement of the fees fails, nothing is done.
 
-#### settleOrders(uint64_t sell, uint64_t buy)
+``` c++
+settleOrders(uint64_t sell, uint64_t buy)
+```
 This method executes the transactions when two orders are matched by the DEX (they are specified by their key properties).
 Both paiements are executed in one transaction, such that if one fails, both fail.
 Of course, before issuing the transaction all checks are done (balance, allowance, permissions, etc.).
 After all is done, we modify or delete the transaction.
 
-#### cancelOrder(uint64_t key)
+``` c++
+cancelOrder(uint64_t key)
+```
 This method deletes an order from the DEX contract scope. 
 
-#### editOrder(uint64_t key, account_name user, asset base, asset counter, uint64_t timestamp, uint64_t expires)
+``` c++
+editOrder(uint64_t key, account_name user, asset base, asset counter, uint64_t expires)
+```
 This method is used to change some properties of an order.
 
 
