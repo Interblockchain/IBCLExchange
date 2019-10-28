@@ -6,7 +6,12 @@ In order to simplify and minimize the database, we have chosen to work within a 
 
 #### Example:
 ```
-Alice wants to trade 10.0000 iBTC on our exchange. Firstly, see approves the DEX account to spend 10.0000 iBTC in her name. She then logs in to our [firebase app]() and checks the different iBTC buying orders on the exchange. She chooses to sell her iBTC for some iXRP at an acceptable (fictional) rate of 100 iXRP per iBTC. To do so, she issues an Order on the firebase app by filling out a form. Behind the scenes, the app issues an createOrder action on the DEX contract specifying the 10.0000 iBTC in the base structure. Instead of only specifying the rate, it calculates the price of the full order (which is 1000.0000 iXRP) and specifies that as the counter. 
+Alice wants to trade 10.0000 iBTC on our exchange. Firstly, see approves the DEX account to spend 10.0000 iBTC
+in her name. She then logs in to our [firebase app]() and checks the different iBTC buying orders on the exchange.
+She chooses to sell her iBTC for some iXRP at an acceptable (fictional) rate of 100 iXRP per iBTC. To do so, she
+issues an Order on the firebase app by filling out a form. Behind the scenes, the app issues an createOrder action
+on the DEX contract specifying the 10.0000 iBTC in the base structure. Instead of only specifying the rate, it
+calculates the price of the full order (which is 1000.0000 iXRP) and specifies that as the counter. 
 ```
 
 # User experience
