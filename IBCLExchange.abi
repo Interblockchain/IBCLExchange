@@ -87,10 +87,6 @@
           "type":"uint64"
           },
           {
-          "name":"user", 
-          "type":"name"
-          },
-          {
             "name":"base", 
             "type":"asset"
           },

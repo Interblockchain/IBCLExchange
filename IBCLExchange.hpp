@@ -44,7 +44,6 @@ public:
 
   [[eosio::action]]
   void editorder(uint64_t key,
-                 name user,
                  asset base,
                  asset counter,
                  uint64_t expires);

@@ -32,7 +32,6 @@ void IBCLExchange::createorder(name user,
                                uint64_t timestamp,
                                uint64_t expires)
 {
-    eosio::print("Entering contract \n");
 
     //Only the account on which the contract is deployed can make operations
     require_auth(user);
@@ -156,19 +155,6 @@ void IBCLExchange::settleorders(uint64_t maker,
     const double new_ask_price = (mot.base.amount -  quantity_maker.amount)/(mot.counter.amount - deduct_maker.amount);
     const double new_taker_price = (tot.base.amount -  quantity_taker.amount)/(tot.counter.amount - deduct_taker.amount);
 
-    //TEMP printing
-    eosio::print("maker order quantity: " , asset{mot.base}, "\n");
-    eosio::print("maker quantity: " , asset{quantity_maker}, "\n");
-    eosio::print("maker deduction: "  , asset{deduct_maker}, "\n");
-    eosio::print("taker order quantity: " , asset{tot.base}, "\n");
-    eosio::print("taker quantity: " , asset{quantity_taker}, "\n");
-    eosio::print("taker deduction: "  , asset{deduct_taker}, "\n");
-    eosio::print("price: " , double{price}, "\n");
-    eosio::print("ask_price: " , double{ask_price}, "\n");
-    eosio::print("taker_price: " , double{taker_price}, "\n");
-    eosio::print("new_ask_price: " , double{new_ask_price}, "\n");
-    eosio::print("new_taker_price: " , double{new_taker_price}, "\n");    
-
     //Some sanity checks
     check( mot.base.amount >= quantity_maker.amount, "Amount bigger than specified in maker order");
     check( tot.base.amount >= quantity_taker.amount, "Amount bigger than specified in taker order");
@@ -221,13 +207,10 @@ void IBCLExchange::settleorders(uint64_t maker,
  * @param expires - date at which the order expires
 **/
 void IBCLExchange::editorder(uint64_t key,
-                             name user,
                              asset base,
                              asset counter,
                              uint64_t expires)
 {
-    //Only the user can modify his orders
-    require_auth(user);
 
     //Check that the order exists and get it
     orders orderstable(get_self(), get_self().value);
@@ -236,6 +219,9 @@ void IBCLExchange::editorder(uint64_t key,
     const auto &ot = *element;
 
     auto basic = "ibclcontract"_n;
+
+    //Only the user can modify his orders
+    require_auth(ot.user);
 
     //Checks on the base amount: check that it is valid
     auto symbase = base.symbol;
@@ -248,7 +234,7 @@ void IBCLExchange::editorder(uint64_t key,
     check(symbase == ot.base.symbol, "Cannot change the base asset type");
 
     // Checks on the allowed table of the user for the base amount
-    allowed allowedtable(basic, user.value);
+    allowed allowedtable(basic, ot.user.value);
     auto existing = allowedtable.find(get_self().value + symbase.code().raw()); //Find returns an iterator pointing to the found object
     check(existing != allowedtable.end(), "IBCLExchange not allowed");
     const auto &at = *existing;
@@ -314,7 +300,6 @@ void IBCLExchange::retireorder(uint64_t key)
 **/
 void IBCLExchange::sendtransfer(name from, name to, asset amount, string memo)
 {
-    eosio::print("Inside sendtransfer: ", name{get_self()}, "\n");
     action transferfrom = action(
       permission_level{get_self(),"active"_n},
       "ibclcontract"_n,
