@@ -14,8 +14,7 @@ She chooses to sell her iBTC for some iXRP at an acceptable (fictional) rate of 
 issues an Order on the app by filling out a form. Behind the scenes, the app issues an createOrder action
 on the DEX contract specifying the 10.0000 iBTC in the base structure. Instead of only specifying the rate, it
 calculates the price of the full order (which is 1000.0000 iXRP) and specifies that as the counter. It also fills
-the fees and sender properties which allow the partner to
-receive his fees when the Order settles. 
+the fees and sender properties which allow the partner to receive his fees when the Order settles. 
 ```
 
 # User experience
