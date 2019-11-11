@@ -4,8 +4,6 @@ Building from the functionality of our [Basic Contract](https://github.com/Inter
 
 In order to simplify and minimize the database, we have chosen to work within a symmetric framework, abstracting the notion of buy or sell from the orders. Each order will instead correspond to a desired transaction between to amount of assets. Orders will specify the amount and asset that are offered by the user (in the base structure). They will also specify the asset the user is willing to accept as trade and the total amount accepted for the full order (in the counter structure). This way of doing things is more transparent, less error prone and as the added benefit of only handling asset amounts (conversions and other rounding prone calculations are left off-chain).
 
-
-
 #### Example:
 ```
 Alice wants to trade 10.0000 iBTC on our exchange. Firstly, she approves the DEX account (ibclexchange) to spend 10.0000 iBTC

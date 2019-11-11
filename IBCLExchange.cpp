@@ -25,8 +25,8 @@ namespace eosio
 void IBCLExchange::createorder(name user,
                                name sender,
                                uint64_t key,
-                               asset base,  
-                               asset counter, 
+                               asset base,
+                               asset counter,
                                asset fees,
                                string memo,
                                uint64_t timestamp,
@@ -45,12 +45,12 @@ void IBCLExchange::createorder(name user,
     check(symbase.is_valid(), "invalid symbol name");
     check(base.is_valid(), "invalid quantity of base token");
     check(base.amount > 0, "Base amount must be positive");
-    stats basestatstable(basic, symbase.code().raw()); 
+    stats basestatstable(basic, symbase.code().raw());
     const auto &bst = basestatstable.get(symbase.code().raw());
     check(symbase == bst.supply.symbol, "symbol precision mismatch");
 
     // Checks on the allowed table of the user for the base amount
-    allowed allowedtable(basic, user.value);                  
+    allowed allowedtable(basic, user.value);
     auto existing = allowedtable.find(get_self().value + symbase.code().raw()); //Find returns an iterator pointing to the found object
     check(existing != allowedtable.end(), "IBCLExchange not allowed for base");
     const auto &at = *existing;
@@ -64,7 +64,7 @@ void IBCLExchange::createorder(name user,
     check(symcounter.is_valid(), "invalid symbol name");
     check(counter.is_valid(), "invalid quantity of base token");
     check(counter.amount > 0, "Base amount must be positive");
-    stats counterstatstable(basic, symcounter.code().raw()); 
+    stats counterstatstable(basic, symcounter.code().raw());
     const auto &cst = counterstatstable.get(symcounter.code().raw());
     check(symcounter == cst.supply.symbol, "symbol precision mismatch");
 
@@ -77,7 +77,7 @@ void IBCLExchange::createorder(name user,
     stats feestatstable(basic, symfees.code().raw());
     const auto &fst = feestatstable.get(symfees.code().raw());
     check(symfees == fst.supply.symbol, "symbol precision mismatch");
-                  
+
     auto feesexist = allowedtable.find(get_self().value + symfees.code().raw()); //Find returns an iterator pointing to the found object
     check(feesexist != allowedtable.end(), "IBCLExchange not allowed for fees");
     const auto &ft = *feesexist;
@@ -101,7 +101,7 @@ void IBCLExchange::createorder(name user,
     //sendtransfer(user, get_self(), fees, memo);
 
     //Now, emplace the order.
-    orderstable.emplace(user, [&](auto &o) {  //who pays the RAM, get_self() or user?
+    orderstable.emplace(user, [&](auto &o) { //who pays the RAM, get_self() or user?
         o.key = key;
         o.user = user;
         o.sender = sender;
@@ -111,7 +111,6 @@ void IBCLExchange::createorder(name user,
         o.timestamp = timestamp;
         o.expires = expires;
     });
-
 }
 
 /**
@@ -133,7 +132,7 @@ void IBCLExchange::settleorders(uint64_t maker,
                                 asset deduct_maker,
                                 asset quantity_taker,
                                 asset deduct_taker,
-                                string memo )
+                                string memo)
 {
     const double tol = 1.0e-10;
 
@@ -152,13 +151,17 @@ void IBCLExchange::settleorders(uint64_t maker,
     const double price = quantity_maker.amount / quantity_taker.amount;
     const double ask_price = mot.base.amount / mot.counter.amount;
     const double taker_price = tot.base.amount / tot.counter.amount;
-    const double new_ask_price = (mot.base.amount -  quantity_maker.amount)/(mot.counter.amount - deduct_maker.amount);
-    const double new_taker_price = (tot.base.amount -  quantity_taker.amount)/(tot.counter.amount - deduct_taker.amount);
+    const double new_ask_price = (mot.base.amount - quantity_maker.amount) / (mot.counter.amount - deduct_maker.amount);
+    const double new_taker_price = (tot.base.amount - quantity_taker.amount) / (tot.counter.amount - deduct_taker.amount);
 
-    //Some sanity checks
-    check( mot.base.amount >= quantity_maker.amount, "Amount bigger than specified in maker order");
-    check( tot.base.amount >= quantity_taker.amount, "Amount bigger than specified in taker order");
-    check( price >= ask_price, "Buying price is smaller than asked price");
+    //Some sanity checks (some tests are performed in sendtransfer so don't do them twice)
+    check(mot.base.amount >= quantity_maker.amount, "Amount bigger than specified in maker order");
+    check(mot.base.symbol.code().raw() == quantity_maker.symbol.code().raw(), "Maker base currency mismatch");
+    check(mot.counter.symbol.code().raw() == deduct_maker.symbol.code().raw(), "Maker counter currency mismatch");
+    check(tot.base.amount >= quantity_taker.amount, "Amount bigger than specified in taker order");
+    check(tot.base.symbol.code().raw() == quantity_taker.symbol.code().raw(), "Taker base currency mismatch");
+    check(tot.counter.symbol.code().raw() == deduct_taker.symbol.code().raw(), "Taker counter currency mismatch");
+    check(price >= ask_price, "Buying price is smaller than asked price");
     check((new_ask_price - ask_price) <= tol, "Updated maker ask price is not the same (deduct_maker not valid)");
     check((new_taker_price - taker_price) <= tol, "Updated taker ask price is not the same (deduct_taker not valid)");
 
@@ -174,25 +177,29 @@ void IBCLExchange::settleorders(uint64_t maker,
     //Now modify/delete the orders accordingly
     // Maker:
     // //updateorder(amount, morderstable, mot, mrate);
-    if(quantity_maker.amount == mot.base.amount) 
+    if (quantity_maker.amount == mot.base.amount)
     {
         morderstable.erase(mot);
-    } else {
+    }
+    else
+    {
         morderstable.modify(mot, get_self(), [&](auto &o) {
-        o.base.amount -= quantity_maker.amount;
-        o.counter.amount -= deduct_maker.amount;
-    });
+            o.base.amount -= quantity_maker.amount;
+            o.counter.amount -= deduct_maker.amount;
+        });
     }
     //Taker:
     //updateorder(tamount, torderstable, tot, trate);
-    if(quantity_taker.amount == tot.base.amount) 
+    if (quantity_taker.amount == tot.base.amount)
     {
         torderstable.erase(tot);
-    } else {
+    }
+    else
+    {
         torderstable.modify(tot, get_self(), [&](auto &o) {
-        o.base.amount -= quantity_taker.amount;
-        o.counter.amount -= deduct_taker.amount;
-    });
+            o.base.amount -= quantity_taker.amount;
+            o.counter.amount -= deduct_taker.amount;
+        });
     }
 }
 
@@ -228,7 +235,7 @@ void IBCLExchange::editorder(uint64_t key,
     check(symbase.is_valid(), "invalid symbol name");
     check(base.is_valid(), "invalid quantity of base token");
     check(base.amount > 0, "Base amount must be positive");
-    stats basestatstable(basic, symbase.code().raw()); 
+    stats basestatstable(basic, symbase.code().raw());
     const auto &bst = basestatstable.get(symbase.code().raw());
     check(symbase == bst.supply.symbol, "symbol precision mismatch");
     check(symbase == ot.base.symbol, "Cannot change the base asset type");
@@ -301,10 +308,10 @@ void IBCLExchange::retireorder(uint64_t key)
 void IBCLExchange::sendtransfer(name from, name to, asset amount, string memo)
 {
     action transferfrom = action(
-      permission_level{get_self(),"active"_n},
-      "ibclcontract"_n,
-      "transferfrom"_n,
-      std::make_tuple(from, to, get_self(), amount, memo));
+        permission_level{get_self(), "active"_n},
+        "ibclcontract"_n,
+        "transferfrom"_n,
+        std::make_tuple(from, to, get_self(), amount, memo));
 
     transferfrom.send();
 }
@@ -313,8 +320,9 @@ void IBCLExchange::sendtransfer(name from, name to, asset amount, string memo)
  * Now
  * @details Helper function to get the current UTC time 
 **/
-uint32_t IBCLExchange::now() {
-  return current_time_point().sec_since_epoch();
+uint32_t IBCLExchange::now()
+{
+    return current_time_point().sec_since_epoch();
 }
 
 } // namespace eosio
