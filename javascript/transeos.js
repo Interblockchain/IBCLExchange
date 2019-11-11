@@ -5,7 +5,6 @@ const axios = require('axios');
 class transeos {
     constructor(params) {
         this.exchangeAddress = params.exchangeAddress;
-        this.network = params.network;
     }
 
     /*
@@ -103,7 +102,7 @@ class transeos {
     }
 
     /*
-     This method allows to change an offer. The only variables that can be changed are: the expiration date and the amounts offered and required by the order. 
+     This method allows to change an order. The only variables that can be changed are: the expiration date and the amounts offered and required by the order. 
      The arguments are:
         wallet: transit-eos wallet object which provide keys for the action
         user: account of the user, possessing the tokens, that will be used in the order (authorization for this account must be provided in wallet)
