@@ -320,14 +320,13 @@ class transeos {
         let total = rows.length;
         if (params && params.page && params.limit && Array.isArray(rows)) rows = this.paginateArray(rows, page, limit);
 
-        let result = {
+        return {
             docs: rows,
             total: total,
             limit: (params.limit) ? parseInt(params.limit) : total,
             page:  (params.page) ? parseInt(params.page) : 1,
             pages: (params.limit) ? Math.ceil(total / parseInt(params.limit)) : 1
         };
-        return result;
     } catch (error) {
         throw { name: error.name, statusCode: "500", message: error.message }
     }
