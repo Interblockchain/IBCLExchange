@@ -6,6 +6,8 @@ In order to pool the liquidity between all partnered exchanges applications, we 
 
 In order to simplify and minimize the database, we have chosen to work within a symmetric framework, abstracting the notion of buy or sell from the orders. Each order will instead correspond to a desired transaction between two amount of assets. Orders will specify the amount and asset that are offered by the user (in the base structure) and the amount and asset the user is willing to accept as trade for the full order (in the counter structure). This way of doing things is more transparent, less error prone and as the added benefit of only handling asset amounts (conversions and other rounding prone calculations are left off-chain).
 
+<img src="./exchange_smart-contract.png" width="700">
+
 # User Experience
 
 Users that want to trade on our exchange will have to :
