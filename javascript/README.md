@@ -126,6 +126,7 @@ getOrders(params)
 ```
 This method allows to query the full order list directly from the blockchain state.
 Can be called by anybody as this information is public.
+For convenience, we paginate the results (with the optional page and limit parameters). 
 
 ### Parameters (Optional):
 The user can supply optional filters to refine the query.
@@ -133,3 +134,5 @@ The user can supply optional filters to refine the query.
 * params.sender: Filter the results to keep only the orders originating from sender (OPTIONAL)
 * params.baseSymbol: Filter the results to keep only orders offering baseSymbol currency (OPTIONAL)
 * params.counterSymbol: Filter the results to keep only orders asking for counterSymbol currency (OPTIONAL)
+* params.page: Page number to return (OPTIONAL, requires params.limit)
+* params.limit: Number of orders to include per page (OPTIONAL, requires params.page)

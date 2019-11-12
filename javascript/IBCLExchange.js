@@ -294,7 +294,7 @@ class transeos {
             params.baseSymbol: Filter the results to keep only orders offering baseSymbol currency (OPTIONAL)
             params.counterSymbol: Filter the results to keep only orders asking for counterSymbol currency (OPTIONAL)
          Returns:
-             result: the result from the blockchain for the action
+             result: the paginated list of orders on the blockchain
     */
    async getOrders(params) {
     try {
@@ -317,7 +317,17 @@ class transeos {
         if (params && params.sender && Array.isArray(rows)) rows = rows.filter(element => element.sender == params.sender);
         if (params && params.baseSymbol && Array.isArray(rows)) rows = rows.filter(element => element.base.split(" ")[1] == params.baseSymbol);
         if (params && params.counterSymbol && Array.isArray(rows)) rows = rows.filter(element => element.counter.split(" ")[1] == params.counterSymbol);
-        return rows;
+        let total = rows.length;
+        if (params && params.page && params.limit && Array.isArray(rows)) rows = this.paginateArray(rows, page, limit);
+
+        let result = {
+            docs: rows,
+            total: total,
+            limit: (params.limit) ? parseInt(params.limit) : total,
+            page:  (params.page) ? parseInt(params.page) : 1,
+            pages: (params.limit) ? Math.ceil(total / parseInt(params.limit)) : 1
+        };
+        return result;
     } catch (error) {
         throw { name: error.name, statusCode: "500", message: error.message }
     }
@@ -383,6 +393,11 @@ class transeos {
         let time = new UInt64(Number(timestamp));
         // console.log("time: " + time.toString());
         return account.add(asset).add(time).toString();
+    }
+
+    paginateArray(array, page_number, page_size) {
+        --page_number; // because pages logically start with 1, but technically with 0
+        return array.slice(page_number * page_size, (page_number + 1) * page_size);
     }
 }
 
