@@ -5,6 +5,7 @@ const axios = require('axios');
 class transeos {
     constructor(params) {
         this.exchangeAddress = params.exchangeAddress;
+        this.network = params.network;
     }
 
     /*
@@ -189,7 +190,7 @@ class transeos {
             key: key identifying the order
          Returns:
              result: the result from the blockchain for the action
-         */
+    */
     async retireOrder(wallet, sender, key) {
         //Validation
         if (!wallet) { throw { name: "No wallet has been passed", statusCode: "400", message: "Please provide an authenticated wallet." } }
@@ -283,6 +284,44 @@ class transeos {
         }]);
         return result;
     }
+
+    /*
+         This method allows to query the full order list directly from the blockchain state.
+         Can be called by anybody as this information is public.
+         The arguments are optional and contained in an object:
+            params.user: Filter the results to keep only the orders from user (OPTIONAL)
+            params.sender: Filter the results to keep only the orders originating from sender (OPTIONAL)
+            params.baseSymbol: Filter the results to keep only orders offering baseSymbol currency (OPTIONAL)
+            params.counterSymbol: Filter the results to keep only orders asking for counterSymbol currency (OPTIONAL)
+         Returns:
+             result: the result from the blockchain for the action
+    */
+   async getOrders(params) {
+    try {
+        let result = await axios({
+            method: 'POST',
+            url: (this.network.port) ? `${this.network.protocol}://${this.network.host}:${this.network.port}/v1/chain/get_table_rows` : `${this.network.protocol}://${this.network.host}/v1/chain/get_table_rows`,
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            data: {
+                code: this.exchangeAddress,
+                scope: this.exchangeAddress,
+                table: "orders",
+                json: true
+            }
+        });
+        let rows = result.data.rows;
+
+        if (params && params.user && Array.isArray(rows)) rows = rows.filter(element => element.user == params.user);
+        if (params && params.sender && Array.isArray(rows)) rows = rows.filter(element => element.sender == params.sender);
+        if (params && params.baseSymbol && Array.isArray(rows)) rows = rows.filter(element => element.base.split(" ")[1] == params.baseSymbol);
+        if (params && params.counterSymbol && Array.isArray(rows)) rows = rows.filter(element => element.counter.split(" ")[1] == params.counterSymbol);
+        return rows;
+    } catch (error) {
+        throw { name: error.name, statusCode: "500", message: error.message }
+    }
+   }
 
     /*=========================================================================================
      PRIVATE METHODS

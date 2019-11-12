@@ -18,6 +18,6 @@ Users that want to trade on our exchange will have to :
 
 # Table of Content
 We provide two repositories:
-* contract: Contains the exchange smart contract which is deployed on the eosio chain 
-* javascript: Contains a small module to easily interface our exchange smart contract with eos-transit
+* [contract](./contract/README.md): Contains the exchange smart contract which is deployed on the eosio chain 
+* [javascript](./javascript/README.md): Contains a small module to easily interface our exchange smart contract with eos-transit
 

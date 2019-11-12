@@ -13,7 +13,13 @@ Simply import the module and construct a new instance by passing the connection 
 const exchangeAPI = require("./IBCLExchange.js");
 
 let params = {
-    exchangeAddress: "ibclexchange",     //Account where the Transledger contract is deployed (usually: ibclexchange) 
+    exchangeAddress: "ibclexchange",     //Account where the Transledger contract is deployed (usually: ibclexchange)
+    network: {
+        host: "jungleapi.eossweden.se",   // RPC API Endpoint for the EOS chain
+        port: null,                       // Port of the API Endpoint
+        protocol: 'https',                // HTTP Connection protocol to the API Endpoint
+        chainId: "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473"  // ChainId of the EOS chain (this example is for JUNGLE)
+    }
 };
 const api = new exchangeAPI(params);
 ```
@@ -28,6 +34,7 @@ All methods require a unlocked [eos-transit](https://github.com/eosnewyork/eos-t
 
 # Methods
 
+## Create Order
 ```javascript
 createOrder(wallet, user, sender, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, feesAmount, memo, expires)
 ```
@@ -46,7 +53,8 @@ This method is used for creating a new order on the blockchain. It must be calle
 * feesAmount: amount of fees (in GIZMO) the relayer is charging
 * memo: a memo
 * expires: Expiration date of the offer [should be in milliseconds since 1970, like Date.now()]
-  
+
+## Edit Order
 ```javascript
 editOrder(wallet, user, key, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, expires)
 ```
@@ -64,6 +72,7 @@ This method allows to change an order. The only variables that can be changed ar
 * counterSymbol: symbol of the wanted currency
 * expires: Expiration date of the offer [should be in milliseconds since 1970, like Date.now()]
 
+## Cancel Order
 ```javascript
 cancelOrder(wallet, user, key)
 ```
@@ -74,6 +83,7 @@ This method allows to delete an existing order. Must be called by the owner of t
 * user: account of the user possessing the order (authorization for this account must be provided in wallet)
 * key: key identifying the order
 
+## Retire Order
 ```javascript
 retireOrder(wallet, sender, key)
 ```
@@ -85,6 +95,7 @@ This is used to do garbage collection.
 * sender: account of the user possessing the order (authorization for this account must be provided in wallet)
 * key: key identifying the order
 
+## Settle Orders
 ```javascript
 settleOrders(wallet, sender, makerKey, takerKey, makerBaseAmount, makerBaseDecimals, makerBaseSymbol, makerCounterAmount, makerCounterDecimals, makerCounterSymbol, takerBaseAmount, takerBaseDecimals, takerBaseSymbol, takerCounterAmount, takerCounterDecimals, takerCounterSymbol , memo)
 ```
@@ -108,3 +119,17 @@ This method allows to settle to matching orders. Can be called by anybody, check
 * takerCounterDecimals: number of decimal of the currency asked by taker
 * takerCounterSymbol: symbol of the currency asked by taker
 * memo: a memo
+
+## Get Orders
+```javascript
+getOrders(params)
+```
+This method allows to query the full order list directly from the blockchain state.
+Can be called by anybody as this information is public.
+
+### Parameters (Optional):
+The user can supply optional filters to refine the query.
+* params.user: Filter the results to keep only the orders from user (OPTIONAL)
+* params.sender: Filter the results to keep only the orders originating from sender (OPTIONAL)
+* params.baseSymbol: Filter the results to keep only orders offering baseSymbol currency (OPTIONAL)
+* params.counterSymbol: Filter the results to keep only orders asking for counterSymbol currency (OPTIONAL)
