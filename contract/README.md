@@ -80,7 +80,7 @@ asset
 
 ## Create Order
 ``` c++
-createorder(name user, name sender, uint64_t key, asset base, asset counter, asset fees, string memo, uint64_t timestamp, uint64_t expires)
+void createorder(name user, name sender, uint64_t key, asset base, asset counter, asset fees, string memo, uint64_t timestamp, uint64_t expires)
 ```
 The createOrder method allows to store an Order in our exchange state. This method must be called with the authority of the user.
 Before adding the order into the table, the contract checks that the user as sufficient balance and allowance for the base and the required permissions. Since a user can always change his allowance table, he can lock the exchange out after issuing an Order. This could be used for malicious order placement (DOS or something). This is mitigated by the fact that the RAM for storing Orders is paid by the user. Hence, a malicious agent would have to use is own ressources. 
@@ -99,7 +99,7 @@ Before adding the order into the table, the contract checks that the user as suf
 
 ## Settle Orders
 ``` c++
-settleorders(uint64_t maker, uint64_t taker, asset quantity_maker, asset deduct_maker, asset quantity_taker, asset deduct_taker, string memo)
+void settleorders(uint64_t maker, uint64_t taker, asset quantity_maker, asset deduct_maker, asset quantity_taker, asset deduct_taker, string memo)
 ```
 This method executes the transactions when two orders are matched by the DEX (they are specified by their key properties).
 Both paiements are executed in one transaction, such that if one fails, both fail.
@@ -121,7 +121,7 @@ To mitigate this, malicious users can be reported to the Block producers and rem
 
 ## Cancel Order
 ``` c++
-cancelorder(uint64_t key)
+void cancelorder(uint64_t key)
 ```
 This method deletes an order from the DEX contract scope. This must be executed by the original user that created the Order.
 
@@ -130,7 +130,7 @@ This method deletes an order from the DEX contract scope. This must be executed 
 
  ## Retire Order
 ``` c++
-retireorder(uint64_t key)
+void retireorder(uint64_t key)
 ```
 This method deletes an order from the DEX contract scope if its expiration date is passed. This can be executed by anybody and
 is used to make a garbage collection service.
@@ -140,7 +140,7 @@ is used to make a garbage collection service.
 
 ## Edit Order
 ``` c++
-editOrder(uint64_t key, asset base, asset counter, uint64_t expires)
+void editOrder(uint64_t key, asset base, asset counter, uint64_t expires)
 ```
 This method is used to change some properties of an Order. This action can only be executed by the original user that created the Order.
 

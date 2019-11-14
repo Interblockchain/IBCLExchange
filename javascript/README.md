@@ -27,7 +27,7 @@ const api = new exchangeAPI(params);
 Then you can invoke the methods, like for example:
 
 ```javascript
-let value = api.createOrder(wallet, user, sender, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, feesAmount, memo, expires);
+let response = api.createOrder(wallet, user, sender, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, feesAmount, memo, expires);
 ```
 
 All methods require a unlocked [eos-transit](https://github.com/eosnewyork/eos-transit/tree/master/packages/eos-transit#basic-usage-example) Wallet with the required authorizations as first argument. See there documentation for more information on this.
@@ -36,7 +36,7 @@ All methods require a unlocked [eos-transit](https://github.com/eosnewyork/eos-t
 
 ## Create Order
 ```javascript
-createOrder(wallet, user, sender, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, feesAmount, memo, expires)
+let response = createOrder(wallet, user, sender, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, feesAmount, memo, expires)
 ```
 This method is used for creating a new order on the blockchain. It must be called with the authority of the specified user. 
 
@@ -56,7 +56,7 @@ This method is used for creating a new order on the blockchain. It must be calle
 
 ## Edit Order
 ```javascript
-editOrder(wallet, user, key, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, expires)
+let response = editOrder(wallet, user, key, baseAmount, baseDecimals, baseSymbol, counterAmount, counterDecimals, counterSymbol, expires)
 ```
 This method allows to change an order. The only variables that can be changed are: the expiration date and the amounts offered and required by the order. It must be called with the authority of the user which created the order.
 
@@ -74,7 +74,7 @@ This method allows to change an order. The only variables that can be changed ar
 
 ## Cancel Order
 ```javascript
-cancelOrder(wallet, user, key)
+let response = cancelOrder(wallet, user, key)
 ```
 This method allows to delete an existing order. Must be called by the owner of the order.
 
@@ -85,7 +85,7 @@ This method allows to delete an existing order. Must be called by the owner of t
 
 ## Retire Order
 ```javascript
-retireOrder(wallet, sender, key)
+let response = retireOrder(wallet, sender, key)
 ```
 This method allows to delete an expired order. It can be called by anybody, a time check is done to prevent deletion of on expired orders.
 This is used to do garbage collection.
@@ -97,7 +97,7 @@ This is used to do garbage collection.
 
 ## Settle Orders
 ```javascript
-settleOrders(wallet, sender, makerKey, takerKey, makerBaseAmount, makerBaseDecimals, makerBaseSymbol, makerCounterAmount, makerCounterDecimals, makerCounterSymbol, takerBaseAmount, takerBaseDecimals, takerBaseSymbol, takerCounterAmount, takerCounterDecimals, takerCounterSymbol , memo)
+let response = settleOrders(wallet, sender, makerKey, takerKey, makerBaseAmount, makerBaseDecimals, makerBaseSymbol, makerCounterAmount, makerCounterDecimals, makerCounterSymbol, takerBaseAmount, takerBaseDecimals, takerBaseSymbol, takerCounterAmount, takerCounterDecimals, takerCounterSymbol , memo)
 ```
 This method allows to settle to matching orders. Can be called by anybody, checks are made to guarantee the matching.
 
@@ -122,7 +122,7 @@ This method allows to settle to matching orders. Can be called by anybody, check
 
 ## Get Orders
 ```javascript
-getOrders(params)
+let response = getOrders(params)
 ```
 This method allows to query the full order list directly from the blockchain state.
 Can be called by anybody as this information is public.
