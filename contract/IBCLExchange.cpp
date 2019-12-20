@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright (c) 2019 Copyright Transledger inc. All rights reserved 
  * 
 **/
 

@@ -1,3 +1,7 @@
+/* ==================================================
+(c) 2019 Copyright Transledger inc. All rights reserved 
+================================================== */
+
 const BigNumber = require('bignumber.js');
 const { UInt64 } = require('int64_t');
 const axios = require('axios');
