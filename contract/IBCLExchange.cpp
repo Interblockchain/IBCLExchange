@@ -38,7 +38,7 @@ void IBCLExchange::createorder(name user,
 
     //BasicContract address and our token
     auto basic = "ibclcontract"_n;
-    uint64_t token = 353350471241;
+    uint64_t token = 1145853012;
 
     //Checks on the base amount: check that it is valid
     auto symbase = base.symbol;
@@ -73,7 +73,7 @@ void IBCLExchange::createorder(name user,
     check(symfees.is_valid(), "invalid symbol name");
     check(fees.is_valid(), "invalid quantity of base token");
     check(fees.amount >= 0, "Base amount must be positive or zero");
-    check(symfees.code().raw() == token, "Fees must be in INTER"); //Fees must be paid in INTER       <===============
+    check(symfees.code().raw() == token, "Fees must be in TTLD"); //Fees must be paid in TTLD       <===============
     stats feestatstable(basic, symfees.code().raw());
     const auto &fst = feestatstable.get(symfees.code().raw());
     check(symfees == fst.supply.symbol, "symbol precision mismatch");
@@ -84,7 +84,7 @@ void IBCLExchange::createorder(name user,
     check(ft.quantity.is_valid(), "invalid fees allowed quantity");
     check(ft.quantity.amount > 0, "fees allowed quantity must be a positive quantity");
     check(ft.quantity.symbol == fst.supply.symbol, "fees symbol precision mismatch");
-    check(ft.quantity.amount >= fees.amount, "fess allowed quantity < Fees order Quantity");
+    check(ft.quantity.amount >= fees.amount, "fees allowed quantity < Fees order Quantity");
 
     //Check memo size
     check(memo.size() <= 256, "memo has more than 256 bytes");

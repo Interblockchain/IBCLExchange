@@ -1,250 +1,251 @@
 {
-  "version": "eosio::abi/1.0",
-  "types": [],
-  "structs": [
-    {
-      "name": "createorder",
-      "base": "",
-      "fields": [
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.1",
+    "types": [],
+    "structs": [
         {
-          "name":"user", 
-          "type":"name"
+            "name": "allowed_struct",
+            "base": "",
+            "fields": [
+                {
+                    "name": "key",
+                    "type": "uint64"
+                },
+                {
+                    "name": "spender",
+                    "type": "name"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                }
+            ]
         },
         {
-          "name":"sender", 
-          "type":"name"
+            "name": "cancelorder",
+            "base": "",
+            "fields": [
+                {
+                    "name": "key",
+                    "type": "uint64"
+                }
+            ]
         },
         {
-          "name":"key", 
-          "type":"uint64"
+            "name": "createorder",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "sender",
+                    "type": "name"
+                },
+                {
+                    "name": "key",
+                    "type": "uint64"
+                },
+                {
+                    "name": "base",
+                    "type": "asset"
+                },
+                {
+                    "name": "counter",
+                    "type": "asset"
+                },
+                {
+                    "name": "fees",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "uint64"
+                },
+                {
+                    "name": "expires",
+                    "type": "uint64"
+                }
+            ]
         },
         {
-          "name":"base", 
-          "type":"asset"
+            "name": "currency_stats",
+            "base": "",
+            "fields": [
+                {
+                    "name": "supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "max_supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "issuer",
+                    "type": "name"
+                }
+            ]
         },
         {
-          "name":"counter", 
-          "type":"asset"
+            "name": "editorder",
+            "base": "",
+            "fields": [
+                {
+                    "name": "key",
+                    "type": "uint64"
+                },
+                {
+                    "name": "base",
+                    "type": "asset"
+                },
+                {
+                    "name": "counter",
+                    "type": "asset"
+                },
+                {
+                    "name": "expires",
+                    "type": "uint64"
+                }
+            ]
         },
         {
-          "name":"fees", 
-          "type":"asset"
+            "name": "order_struct",
+            "base": "",
+            "fields": [
+                {
+                    "name": "key",
+                    "type": "uint64"
+                },
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "sender",
+                    "type": "name"
+                },
+                {
+                    "name": "base",
+                    "type": "asset"
+                },
+                {
+                    "name": "counter",
+                    "type": "asset"
+                },
+                {
+                    "name": "fees",
+                    "type": "asset"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "uint64"
+                },
+                {
+                    "name": "expires",
+                    "type": "uint64"
+                }
+            ]
         },
         {
-          "name":"memo", 
-          "type":"string"
+            "name": "retireorder",
+            "base": "",
+            "fields": [
+                {
+                    "name": "key",
+                    "type": "uint64"
+                }
+            ]
         },
         {
-          "name":"timestamp", 
-          "type":"uint64"
-        },
-        {
-          "name":"expires", 
-          "type":"uint64"
+            "name": "settleorders",
+            "base": "",
+            "fields": [
+                {
+                    "name": "maker",
+                    "type": "uint64"
+                },
+                {
+                    "name": "taker",
+                    "type": "uint64"
+                },
+                {
+                    "name": "quantity_maker",
+                    "type": "asset"
+                },
+                {
+                    "name": "deduct_maker",
+                    "type": "asset"
+                },
+                {
+                    "name": "quantity_taker",
+                    "type": "asset"
+                },
+                {
+                    "name": "deduct_taker",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
         }
-      ]
-    },
-    {
-       "name": "settleorders",
-       "base": "",
-       "fields": [
-          {
-            "name":"maker", 
-            "type":"uint64"
-          },
-          {
-            "name":"taker", 
-            "type":"uint64"
-          },
-          {
-            "name":"quantity_maker", 
-            "type":"asset"
-          },
-          {
-            "name":"deduct_maker", 
-            "type":"asset"
-          },
-          {
-            "name":"quantity_taker", 
-            "type":"asset"
-          },
-          {
-            "name":"deduct_taker", 
-            "type":"asset"
-          },
-          {
-          "name":"memo", 
-          "type":"string"
+    ],
+    "actions": [
+        {
+            "name": "cancelorder",
+            "type": "cancelorder",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "createorder",
+            "type": "createorder",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "editorder",
+            "type": "editorder",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "retireorder",
+            "type": "retireorder",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "settleorders",
+            "type": "settleorders",
+            "ricardian_contract": ""
         }
-       ]
-    },
-    {
-       "name": "editorder",
-       "base": "",
-       "fields": [
-          {
-          "name":"key", 
-          "type":"uint64"
-          },
-          {
-            "name":"base", 
-            "type":"asset"
-          },
-          {
-          "name":"counter", 
-          "type":"asset"
-          },
-          {
-          "name":"expires", 
-          "type":"uint64"
-          }
-       ]
-    },
-    {
-       "name": "cancelorder",
-       "base": "",
-       "fields": [
-          {
-            "name":"key", 
-            "type":"uint64"
-          }
-       ]
-    },
-    {
-       "name": "retireorder",
-       "base": "",
-       "fields": [
-          {
-            "name":"key", 
-            "type":"uint64"
-          }
-       ]
-    },
-    {
-      "name": "order_struct",
-      "base": "",
-      "fields": [
+    ],
+    "tables": [
         {
-          "name":"key", 
-          "type":"uint64"
+            "name": "allowed",
+            "type": "allowed_struct",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
         },
         {
-          "name":"user", 
-          "type":"name"
+            "name": "orders",
+            "type": "order_struct",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
         },
         {
-          "name":"sender", 
-          "type":"name"
-        },
-        {
-          "name":"base", 
-          "type":"asset"
-        },
-        {
-          "name":"counter", 
-          "type":"asset"
-        },
-        {
-          "name":"fees", 
-          "type":"asset"
-        },
-        {
-          "name":"timestamp", 
-          "type":"uint64"
-        },
-        {
-          "name":"expires", 
-          "type":"uint64"
+            "name": "stat",
+            "type": "currency_stats",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
         }
-      ]
-    },
-    {
-      "name": "currency_stats",
-      "base": "",
-      "fields": [
-        {
-          "name":"supply", 
-          "type":"asset"
-        },
-        {
-          "name":"max_supply", 
-          "type":"asset"
-        },
-        {
-          "name":"issuer", 
-          "type":"name"
-        }
-      ]
-    },
-    {
-      "name": "allowed_struct",
-      "base": "",
-      "fields": [
-        {
-          "name":"key", 
-          "type":"uint64"
-        },
-        {
-          "name":"spender", 
-          "type":"name"
-        }
-        {
-          "name":"quantity", 
-          "type":"asset"
-        }
-      ]
-    }
-  ],
-  "actions": [
-    {
-      "name": "createorder",
-      "type": "createorder",
-      "ricardian_contract": ""
-    },
-    {
-      "name": "settleorders",
-      "type": "settleorders",
-      "ricardian_contract": ""
-    },
-    {
-      "name": "editorder",
-      "type": "editorder",
-      "ricardian_contract": ""
-    },
-    {
-      "name": "cancelorder",
-      "type": "cancelorder",
-      "ricardian_contract": ""
-    },
-    {
-      "name": "retireorder",
-      "type": "retireorder",
-      "ricardian_contract": ""
-    }
-  ],
-  "tables": [
-    {
-      "name": "orders",
-      "type": "order_struct",
-      "index_type": "i64",
-      "key_names" : ["key"],
-      "key_types" : ["uint64"]
-    },
-    {
-      "name": "stat",
-      "type": "currency_stats",
-      "index_type": "i64",
-      "key_names" : ["currency"],
-      "key_types" : ["uint64"]
-    },
-    {
-      "name": "allowed",
-      "type": "allowed_struct",
-      "index_type": "i64",
-      "key_names" : ["key"],
-      "key_types" : ["uint64"]
-    }
-  ],
-  "ricardian_clauses": [],
-  "abi_extensions": []
+    ],
+    "ricardian_clauses": [],
+    "variants": []
 }
