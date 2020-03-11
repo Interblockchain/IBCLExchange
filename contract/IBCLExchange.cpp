@@ -327,4 +327,4 @@ uint32_t IBCLExchange::now()
 
 } // namespace eosio
 
-EOSIO_DISPATCH(eosio::IBCLExchange, (createorder)(settleorders)(editorder)(cancelorder))
+EOSIO_DISPATCH(eosio::IBCLExchange, (createorder)(settleorders)(editorder)(cancelorder)(retireorder))
