@@ -292,7 +292,7 @@ void IBCLExchange::retireorder(uint64_t key)
     auto order = orderstable.find(key);
     check(order != orderstable.end(), "Order not found!");
     const auto &ot = *order;
-    check(ot.expires > now(), "Order has not expired");
+    check(ot.expires < now(), "Order has not expired");
     orderstable.erase(ot);
 }
 
