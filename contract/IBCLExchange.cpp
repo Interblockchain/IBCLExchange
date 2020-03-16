@@ -151,8 +151,6 @@ void IBCLExchange::settleorders(uint64_t maker,
     const double price = quantity_maker.amount / quantity_taker.amount;
     const double ask_price = mot.base.amount / mot.counter.amount;
     const double taker_price = tot.base.amount / tot.counter.amount;
-    const double new_ask_price = (mot.base.amount - quantity_maker.amount) / (mot.counter.amount - deduct_maker.amount);
-    const double new_taker_price = (tot.base.amount - quantity_taker.amount) / (tot.counter.amount - deduct_taker.amount);
 
     //Some sanity checks (some tests are performed in sendtransfer so don't do them twice)
     check(mot.base.amount >= quantity_maker.amount, "Amount bigger than specified in maker order");
@@ -162,8 +160,20 @@ void IBCLExchange::settleorders(uint64_t maker,
     check(tot.base.symbol.code().raw() == quantity_taker.symbol.code().raw(), "Taker base currency mismatch");
     check(tot.counter.symbol.code().raw() == deduct_taker.symbol.code().raw(), "Taker counter currency mismatch");
     check(price >= ask_price, "Buying price is smaller than asked price");
-    check((new_ask_price - ask_price) <= tol, "Updated maker ask price is not the same (deduct_maker not valid)");
-    check((new_taker_price - taker_price) <= tol, "Updated taker ask price is not the same (deduct_taker not valid)");
+
+    // if (((mot.base.amount - quantity_maker.amount) > tol) &&  ((mot.counter.amount - deduct_maker.amount) > tol))
+    if ((mot.base.amount - quantity_maker.amount) > tol)
+    {
+        const double new_ask_price = (mot.base.amount - quantity_maker.amount) / (mot.counter.amount - deduct_maker.amount);
+        check((new_ask_price - ask_price) < tol, "Updated maker ask price is not the same (deduct_maker not valid)");
+    }
+
+    // if (((tot.base.amount - quantity_taker.amount) > tol) && ((tot.counter.amount - deduct_taker.amount) > tol))
+    if ((tot.base.amount - quantity_taker.amount) > tol)
+    {
+        const double new_taker_price = (tot.base.amount - quantity_taker.amount) / (tot.counter.amount - deduct_taker.amount);
+        check((new_taker_price - taker_price) < tol, "Updated taker ask price is not the same (deduct_taker not valid)");
+    }
 
     //Now make the transfers between both parties
     //Don't need to redo all the checks since they are done in transferfrom
